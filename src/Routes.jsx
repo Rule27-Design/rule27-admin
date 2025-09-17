@@ -9,23 +9,29 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import AuthCallback from './pages/AuthCallback';
-import NoAccess from './pages/NoAccess';
 import NotFound from './pages/NotFound';
+import NoAccess from './pages/NoAccess';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
-import AdminServices from './pages/admin/Services';
-import AdminProjects from './pages/admin/Projects';
+import SetupProfile from './pages/admin/SetupProfile';
+
+// Admin Features - Check which actually exist
+import AdminServices from './pages/admin/services/Services';
+import AdminArticles from './pages/admin/articles/Articles';
+import AdminCaseStudies from './pages/admin/case-studies/CaseStudies';
+import AdminProfiles from './pages/admin/profiles/Profiles';
+import AdminSettings from './pages/admin/settings/Settings';
+import AdminLeads from './pages/admin/Leads';
+import AdminAnalytics from './pages/admin/Analytics';
+
+// Client Management
 import AdminClients from './pages/admin/clients/Clients';
 import InviteClient from './pages/admin/clients/InviteClient';
-import ClientInvitations from './pages/admin/clients/ClientInvitations';
-import AdminReviews from './pages/admin/Reviews';
-import AdminBlog from './pages/admin/Blog';
-import AdminWork from './pages/admin/Work';
-import AdminUsers from './pages/admin/Users';
-import AdminSettings from './pages/admin/Settings';
-import SetupProfile from './pages/admin/SetupProfile';
+import ClientInvitations from './pages/admin/clients/Invitations';
+import ClientDetail from './pages/admin/clients/ClientDetail';
+import EditClient from './pages/admin/clients/EditClient';
 
 // Utils
 import ProtectedRoute from './components/ProtectedRoute';
@@ -50,7 +56,7 @@ const Routes = ({ session }) => {
             </ProtectedRoute>
           } />
           
-          {/* Admin Portal Routes */}
+          {/* Protected Admin Routes */}
           <Route path="/" element={
             <ProtectedRoute session={session} requiredRoles={['admin', 'contributor', 'client_manager']}>
               <AdminLayout />
@@ -58,15 +64,49 @@ const Routes = ({ session }) => {
           }>
             <Route index element={<AdminDashboard />} />
             <Route path="services" element={<AdminServices />} />
-            <Route path="projects" element={<AdminProjects />} />
-            <Route path="clients" element={<AdminClients />} />
-            <Route path="clients/invite" element={<InviteClient />} />
-            <Route path="clients/invitations" element={<ClientInvitations />} />
-            <Route path="reviews" element={<AdminReviews />} />
-            <Route path="blog" element={<AdminBlog />} />
-            <Route path="work" element={<AdminWork />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="settings" element={<AdminSettings />} />
+            <Route path="articles" element={<AdminArticles />} />
+            <Route path="case-studies" element={<AdminCaseStudies />} />
+            <Route path="leads" element={<AdminLeads />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            
+            {/* Admin-only routes */}
+            <Route path="profiles" element={
+              <ProtectedRoute session={session} requiredRoles={['admin']}>
+                <AdminProfiles />
+              </ProtectedRoute>
+            } />
+            <Route path="settings" element={
+              <ProtectedRoute session={session} requiredRoles={['admin']}>
+                <AdminSettings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Client management - Admin and Client Manager */}
+            <Route path="clients" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <AdminClients />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/invite" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <InviteClient />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/invitations" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <ClientInvitations />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/:id" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <ClientDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="clients/:id/edit" element={
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
+                <EditClient />
+              </ProtectedRoute>
+            } />
           </Route>
           
           {/* 404 */}
