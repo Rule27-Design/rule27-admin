@@ -1,8 +1,8 @@
 // src/pages/auth/AuthCallback.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import Icon from '../../components/AppIcon';
+import { supabase } from '../lib/supabase';
+import Icon from '../components/AppIcon';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
