@@ -14,15 +14,15 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
   const navigate = useNavigate();
 
   const navigation = [
-    { name: 'Dashboard', path: '/admin', icon: 'LayoutDashboard' },
-    { name: 'Services', path: '/admin/services', icon: 'Zap' },
-    { name: 'Articles', path: '/admin/articles', icon: 'FileText' },
-    { name: 'Case Studies', path: '/admin/case-studies', icon: 'Briefcase' },
-    { name: 'Profiles', path: '/admin/profiles', icon: 'Users', roles: ['admin'] },
-    { name: 'Leads', path: '/admin/leads', icon: 'UserCheck' },
-    { name: 'Clients', path: '/admin/clients', icon: 'Building', roles: ['admin', 'client_manager'] },
-    { name: 'Analytics', path: '/admin/analytics', icon: 'TrendingUp' },
-    { name: 'Settings', path: '/admin/settings', icon: 'Settings', roles: ['admin'] },
+    { name: 'Dashboard', path: '/', icon: 'LayoutDashboard' },
+    { name: 'Services', path: '/services', icon: 'Zap' },
+    { name: 'Articles', path: '/articles', icon: 'FileText' },
+    { name: 'Case Studies', path: '/case-studies', icon: 'Briefcase' },
+    { name: 'Profiles', path: '/profiles', icon: 'Users', roles: ['admin'] },
+    { name: 'Leads', path: '/leads', icon: 'UserCheck' },
+    { name: 'Clients', path: '/clients', icon: 'Building', roles: ['admin', 'client_manager'] },
+    { name: 'Analytics', path: '/analytics', icon: 'TrendingUp' },
+    { name: 'Settings', path: '/settings', icon: 'Settings', roles: ['admin'] },
   ];
 
   const filteredNavigation = navigation.filter(item => {
