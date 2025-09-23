@@ -57,7 +57,7 @@ const SetupProfile = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        navigate('/admin/login');
+        navigate('/login');
         return;
       }
 
@@ -140,10 +140,10 @@ const SetupProfile = () => {
   const handleCancel = () => {
     if (hasChanges) {
       if (confirm('Discard unsaved changes?')) {
-        navigate('/admin');
+        navigate('/');
       }
     } else {
-      navigate('/admin');
+      navigate('/');
     }
   };
 
@@ -389,7 +389,7 @@ const SetupProfile = () => {
                 <h3 className="text-sm font-medium text-gray-900 mb-4">Account Security</h3>
                 <Button
                   variant="outline"
-                  onClick={() => navigate('/admin/reset-password')}
+                  onClick={() => navigate('/reset-password')}
                   iconName="Lock"
                 >
                   Change Password
