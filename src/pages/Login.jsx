@@ -57,7 +57,7 @@ const Login = () => {
 
       // Admin/contributor/client_manager - check onboarding
       if (!profile.onboarding_completed) {
-        navigate('/setup-profile');
+        navigate('/my-profile');
       } else {
         navigate('/');
       }

@@ -235,10 +235,10 @@ const AuthCallback = () => {
       // Route to appropriate setup based on role
       if (profile.role === 'standard') {
         console.log('Redirecting to client profile setup');
-        navigate('/client/setup-profile');
+        navigate('app.rule27design.com');
       } else {
         console.log('Redirecting to admin profile setup');
-        navigate('/setup-profile');
+        navigate('/my-profile');
       }
     } else if (profile.role === 'admin' || profile.role === 'contributor' || profile.role === 'client_manager') {
       console.log('Redirecting to admin dashboard');
@@ -277,7 +277,7 @@ const Routes = ({ session }) => {
           <Route path="/auth/callback" element={<AuthCallback />} />
           
           {/* Profile Setup Routes - Outside of layouts for full-screen experience */}
-          <Route path="/setup-profile" element={<SetupProfile />} />
+          <Route path="/my-profile" element={<SetupProfile />} />
           <Route path="/client/setup-profile" element={
             <ProtectedRoute session={session} requiredRoles={['standard']}>
               <ClientSetupProfile />
