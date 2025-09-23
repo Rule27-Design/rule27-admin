@@ -278,11 +278,6 @@ const Routes = ({ session }) => {
           
           {/* Profile Setup Routes - Outside of layouts for full-screen experience */}
           <Route path="/my-profile" element={<SetupProfile />} />
-          <Route path="/client/setup-profile" element={
-            <ProtectedRoute session={session} requiredRoles={['standard']}>
-              <ClientSetupProfile />
-            </ProtectedRoute>
-          } />
           
           {/* Protected Admin Routes */}
           <Route path="/" element={
