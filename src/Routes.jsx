@@ -259,7 +259,7 @@ const AuthCallback = () => {
         navigate('/client/setup-profile');
       } else {
         console.log('Redirecting to admin profile setup');
-        navigate('/admin/setup-profile');
+        navigate('/setup-profile');
       }
     } else if (profile.role === 'admin' || profile.role === 'contributor' || profile.role === 'client_manager') {
       console.log('Redirecting to admin dashboard');
@@ -400,7 +400,7 @@ const Routes = ({ session }) => {
           <Route path="/auth/callback" element={<AuthCallback />} />
           
           {/* Profile Setup Routes - Outside of layouts for full-screen experience */}
-          <Route path="/admin/setup-profile" element={<SetupProfile />} />
+          <Route path="/setup-profile" element={<SetupProfile />} />
           <Route path="/client/setup-profile" element={
             <ProtectedRoute session={session} requiredRoles={['standard']}>
               <ClientSetupProfile />

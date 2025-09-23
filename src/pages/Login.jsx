@@ -89,7 +89,7 @@ const Login = () => {
         if (profile.role === 'standard') {
           navigate('/client/setup-profile');
         } else {
-          navigate('/admin/setup-profile');
+          navigate('/setup-profile');
         }
         return;
       }
@@ -290,7 +290,7 @@ const Login = () => {
         if (profileData.role === 'standard') {
           navigate('/client/setup-profile');
         } else {
-          navigate('/admin/setup-profile');
+          navigate('/setup-profile');
         }
       }, 2000);
       

@@ -442,14 +442,14 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
           {/* Bottom Actions */}
           <div className="border-t p-4 space-y-2">
             <Link
-              to="/"
+              to="https://www.rule27design.com"
               className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Icon name="Home" size={20} />
               <span>View Site</span>
             </Link>
             <Link
-              to="/admin/profile"
+              to="/profile"
               className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Icon name="User" size={20} />
@@ -498,7 +498,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/admin/leads')}
+                onClick={() => navigate('/leads')}
                 className="relative"
               >
                 <Icon name="Bell" size={20} />

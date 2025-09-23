@@ -96,14 +96,14 @@ const AdminClients = () => {
         <div className="flex space-x-3">
           <Button
             variant="outline"
-            onClick={() => navigate('/admin/clients/invitations')}
+            onClick={() => navigate('/clients/invitations')}
             iconName="Mail"
           >
             Invitations
           </Button>
           <Button
             variant="default"
-            onClick={() => navigate('/admin/clients/invite')}
+            onClick={() => navigate('/clients/invite')}
             iconName="UserPlus"
             className="bg-accent hover:bg-accent/90"
           >
@@ -190,7 +190,7 @@ const AdminClients = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/admin/clients/${client.id}`)}
+                          onClick={() => navigate(`/clients/${client.id}`)}
                         >
                           View
                         </Button>
@@ -198,7 +198,7 @@ const AdminClients = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/admin/clients/${client.id}/edit`)}
+                            onClick={() => navigate(`/clients/${client.id}/edit`)}
                           >
                             Edit
                           </Button>

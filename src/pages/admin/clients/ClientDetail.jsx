@@ -97,14 +97,14 @@ const ClientDetail = () => {
           <div className="flex space-x-3">
             <Button
               variant="outline"
-              onClick={() => navigate(`/admin/clients/${id}/edit`)}
+              onClick={() => navigate(`/clients/${id}/edit`)}
             >
               Edit Client
             </Button>
             <Button
               variant="default"
               className="bg-accent hover:bg-accent/90"
-              onClick={() => navigate('/admin/clients')}
+              onClick={() => navigate('/clients')}
             >
               Back to Clients
             </Button>

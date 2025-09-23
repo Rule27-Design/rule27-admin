@@ -117,7 +117,7 @@ const InviteClient = () => {
             personal_message: ''
           });
         } else {
-          navigate('/admin/clients');
+          navigate('/clients');
         }
       } else {
         // Auto email selected - show link for manual sending (temporary until email service is set up)
@@ -128,7 +128,7 @@ const InviteClient = () => {
         );
         
         setTimeout(() => {
-          navigate('/admin/clients');
+          navigate('/clients');
         }, 1500);
       }
 
@@ -145,7 +145,7 @@ const InviteClient = () => {
       <div className="mb-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/admin/clients')}
+          onClick={() => navigate('/clients')}
           iconName="ArrowLeft"
         >
           Back to Clients
@@ -319,7 +319,7 @@ const InviteClient = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate('/admin/clients')}
+              onClick={() => navigate('/clients')}
             >
               Cancel
             </Button>
@@ -340,7 +340,7 @@ const InviteClient = () => {
       <div className="mt-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/admin/clients/invitations')}
+          onClick={() => navigate('/clients/invitations')}
           iconName="Clock"
         >
           View All Invitations

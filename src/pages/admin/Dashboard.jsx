@@ -169,7 +169,7 @@ const Dashboard = () => {
       value: stats.articles.total,
       icon: 'FileText',
       color: 'bg-blue-500',
-      link: '/admin/articles',
+      link: '/articles',
       detail: `${stats.articles.published} published`
     },
     {
@@ -177,7 +177,7 @@ const Dashboard = () => {
       value: stats.caseStudies.total,
       icon: 'Briefcase',
       color: 'bg-green-500',
-      link: '/admin/case-studies',
+      link: '/case-studies',
       detail: `${stats.caseStudies.published} published`
     },
     {
@@ -185,7 +185,7 @@ const Dashboard = () => {
       value: stats.leads.total,
       icon: 'UserCheck',
       color: 'bg-purple-500',
-      link: '/admin/leads',
+      link: '/leads',
       detail: `${stats.leads.new} new, ${stats.leads.hot} hot`
     },
     {
@@ -193,16 +193,16 @@ const Dashboard = () => {
       value: stats.services.total,
       icon: 'Zap',
       color: 'bg-orange-500',
-      link: '/admin/services',
+      link: '/services',
       detail: `${stats.services.active} active`
     }
   ];
 
   const quickActions = [
-    { label: 'New Article', icon: 'FileText', link: '/admin/articles?action=new' },
-    { label: 'New Case Study', icon: 'Briefcase', link: '/admin/case-studies?action=new' },
-    { label: 'Add Service', icon: 'Plus', link: '/admin/services?action=new' },
-    { label: 'View Analytics', icon: 'TrendingUp', link: '/admin/analytics' }
+    { label: 'New Article', icon: 'FileText', link: '/articles?action=new' },
+    { label: 'New Case Study', icon: 'Briefcase', link: '/case-studies?action=new' },
+    { label: 'Add Service', icon: 'Plus', link: '/services?action=new' },
+    { label: 'View Analytics', icon: 'TrendingUp', link: '/analytics' }
   ];
 
   if (stats.loading) {
@@ -285,7 +285,7 @@ const Dashboard = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-heading-bold uppercase">User Role Distribution</h2>
-          <Link to="/admin/profiles" className="text-accent text-sm hover:underline">
+          <Link to="/profiles" className="text-accent text-sm hover:underline">
             Manage Users →
           </Link>
         </div>
@@ -321,7 +321,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <p className="text-xs text-yellow-800">
                   <strong>Review Needed:</strong> You have {stats.roles.standard} user{stats.roles.standard !== 1 ? 's' : ''} with standard role. 
-                  These users can log in but have no admin access. Review them in the <Link to="/admin/profiles" className="underline font-medium">Profiles section</Link> to 
+                  These users can log in but have no admin access. Review them in the <Link to="/profiles" className="underline font-medium">Profiles section</Link> to 
                   see if any need elevated permissions.
                 </p>
               </div>
@@ -336,7 +336,7 @@ const Dashboard = () => {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-heading-bold uppercase">Pending Approvals</h2>
-              <Link to="/admin/articles?filter=pending_approval" className="text-accent text-sm hover:underline">
+              <Link to="/articles?filter=pending_approval" className="text-accent text-sm hover:underline">
                 View all →
               </Link>
             </div>
@@ -352,7 +352,7 @@ const Dashboard = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.location.href = `/admin/articles?id=${item.id}&action=review`}
+                    onClick={() => window.location.href = `/articles?id=${item.id}&action=review`}
                   >
                     Review
                   </Button>
@@ -366,7 +366,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-heading-bold uppercase">Recent Activity</h2>
-            <Link to="/admin/articles" className="text-accent text-sm hover:underline">
+            <Link to="/articles" className="text-accent text-sm hover:underline">
               View all →
             </Link>
           </div>

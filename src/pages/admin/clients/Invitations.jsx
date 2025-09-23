@@ -86,7 +86,7 @@ const ClientInvitations = () => {
         <h1 className="text-2xl font-heading-bold uppercase">Client Invitations</h1>
         <Button
           variant="default"
-          onClick={() => navigate('/admin/clients/invite')}
+          onClick={() => navigate('/clients/invite')}
           iconName="UserPlus"
           className="bg-accent hover:bg-accent/90"
         >

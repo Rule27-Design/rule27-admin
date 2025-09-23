@@ -92,12 +92,12 @@ const AuthCallback = () => {
         }
       } else {
         console.log('No session found, redirecting to login');
-        navigate('/login'); // Changed from '/admin/login'
+        navigate('/login'); 
       }
     } catch (error) {
       console.error('Auth callback error:', error);
       setError(error.message || 'Authentication failed');
-      setTimeout(() => navigate('/login'), 3000); // Changed from '/admin/login'
+      setTimeout(() => navigate('/login'), 3000); 
     } finally {
       setLoading(false);
     }
@@ -128,12 +128,12 @@ const AuthCallback = () => {
     // STEP 1: Password setup (for invited users who haven't set password)
     if (!hasPassword && isFirstLogin) {
       console.log('Redirecting to password setup');
-      navigate('/admin/setup-profile?step=password');
+      navigate('/setup-profile?step=password');
     }
     // STEP 2: Profile setup (if password is set but profile not complete)
     else if (!profileCompleted) {
       console.log('Redirecting to profile setup');
-      navigate('/admin/setup-profile?step=profile');
+      navigate('/setup-profile?step=profile');
     }
     // STEP 3: Route based on role
     else if (profile.role === 'admin' || profile.role === 'contributor') {
