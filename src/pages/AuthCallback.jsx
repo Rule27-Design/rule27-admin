@@ -128,12 +128,12 @@ const AuthCallback = () => {
     // STEP 1: Password setup (for invited users who haven't set password)
     if (!hasPassword && isFirstLogin) {
       console.log('Redirecting to password setup');
-      navigate('/setup-profile?step=password');
+      navigate('/my-profile?step=password');
     }
     // STEP 2: Profile setup (if password is set but profile not complete)
     else if (!profileCompleted) {
       console.log('Redirecting to profile setup');
-      navigate('/setup-profile?step=profile');
+      navigate('/my-profile?step=profile');
     }
     // STEP 3: Route based on role
     else if (profile.role === 'admin' || profile.role === 'contributor') {

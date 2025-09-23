@@ -8,7 +8,7 @@ import ErrorBoundary from "components/ErrorBoundary";
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import AuthCallback from './pages/AuthCallback';
+//import AuthCallback from './pages/AuthCallback';
 import NotFound from './pages/NotFound';
 import NoAccess from './pages/NoAccess';
 
