@@ -1,10 +1,9 @@
-// src/components/ProtectedRoute.jsx
+// src/components/ProtectedRoute.jsx - Admin Portal Version
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import Icon from './AppIcon';
 
-const ProtectedRoute = ({ children, session, requiredRoles = [] }) => {
+const ProtectedRoute = ({ children, session, requiredRoles = ['admin', 'contributor', 'client_manager'] }) => {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -16,10 +15,8 @@ const ProtectedRoute = ({ children, session, requiredRoles = [] }) => {
 
   const checkAuthorization = async () => {
     try {
-      // First check if we have a session
       let currentSession = session;
       
-      // If no session prop, get it from Supabase
       if (!currentSession) {
         const { data: { session: authSession } } = await supabase.auth.getSession();
         currentSession = authSession;
@@ -31,7 +28,6 @@ const ProtectedRoute = ({ children, session, requiredRoles = [] }) => {
         return;
       }
 
-      // Get user profile with role
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -48,25 +44,22 @@ const ProtectedRoute = ({ children, session, requiredRoles = [] }) => {
       setUserProfile(profile);
       setUserRole(profile.role);
 
-      // Check if user's role matches required roles
-      if (requiredRoles.length > 0) {
-        // If specific roles are required, check if user has one of them
-        const hasRequiredRole = requiredRoles.includes(profile.role);
-        setAuthorized(hasRequiredRole);
-      } else {
-        // If no specific roles required (backward compatibility)
-        // Default to admin, contributor, and client_manager for admin routes
-        const adminRoles = ['admin', 'contributor', 'client_manager'];
-        setAuthorized(adminRoles.includes(profile.role));
+      // Admin portal only allows admin, contributor, client_manager roles
+      if (profile.role === 'standard') {
+        // Client users should go to client portal
+        setAuthorized(false);
+        window.location.href = 'https://app.rule27design.com';
+        return;
       }
 
+      // Check if user has required role
+      const hasRequiredRole = requiredRoles.includes(profile.role);
+      
       // Check if onboarding is completed (unless on setup-profile page)
       if (!profile.onboarding_completed && !window.location.pathname.includes('setup-profile')) {
-        console.log('Profile onboarding not completed');
-        // Don't block access to setup-profile page
-        if (!window.location.pathname.includes('setup-profile')) {
-          setAuthorized(false);
-        }
+        setAuthorized(false);
+      } else {
+        setAuthorized(hasRequiredRole);
       }
     } catch (error) {
       console.error('Authorization error:', error);
@@ -80,40 +73,23 @@ const ProtectedRoute = ({ children, session, requiredRoles = [] }) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto"></div>
-          <p className="mt-4 text-gray-600">Checking authorization...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking authorization...</p>
         </div>
       </div>
     );
   }
 
   if (!authorized) {
-    // Determine where to redirect based on context
     if (!session) {
-      // No session - go to login
       return <Navigate to="/login" replace />;
-    } else if (userRole === 'standard') {
-      // Standard users trying to access admin - redirect to client portal
-      return <Navigate to="/client" replace />;
-    } else if (userRole && !requiredRoles.includes(userRole)) {
-      // User has a role but not the required one
-      if (userRole === 'admin' || userRole === 'contributor' || userRole === 'client_manager') {
-        // Admin users without access to specific area
-        return <Navigate to="/admin" replace />;
-      } else {
-        // Other users - go home
-        return <Navigate to="/" replace />;
-      }
     } else if (!userProfile?.onboarding_completed) {
-      // Onboarding not complete
-      return <Navigate to="/admin/setup-profile" replace />;
+      return <Navigate to="/setup-profile" replace />;
     } else {
-      // Default to login
       return <Navigate to="/login" replace />;
     }
   }
 
-  // Clone children and pass userProfile as prop
   return React.cloneElement(children, { userProfile, setUserProfile });
 };
 

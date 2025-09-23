@@ -1,37 +1,23 @@
-// src/Routes.jsx
-import React, { useEffect } from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route, Navigate, useNavigate } from "react-router-dom";
+// src/Routes.jsx - Admin Portal Version
+import React from "react";
+import { BrowserRouter, Routes as RouterRoutes, Route, Navigate } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
-import NotFound from "pages/NotFound";
-
-// Import event systems for all admin modules
-import { useArticleEvents, ARTICLE_EVENTS } from './pages/admin/articles/hooks/useArticleEvents';
-import { useCaseStudyEvents, CASE_STUDY_EVENTS } from './pages/admin/case-studies/hooks/useCaseStudyEvents';
-import { useServiceEvents, SERVICE_EVENTS } from './pages/admin/services/hooks/useServiceEvents';
-import { useProfileEvents, PROFILE_EVENTS } from './pages/admin/profiles/hooks/useProfileEvents';
-import { useSettingsEvents } from './pages/admin/settings/hooks/useSettingsEvents';
-
-// Public Pages
-import HomepageExperienceHub from './pages/homepage-experience-hub';
-import CapabilityUniverse from './pages/capability-universe';
-import InnovationLaboratory from './pages/innovation-laboratory';
-import WorkShowcaseTheater from './pages/work-showcase-theater';
-import CaseStudyDetail from './pages/case-study-detail';
-import ArticlesHub from './pages/articles-hub';
-import AboutProcessStudio from './pages/about-process-studio';
-import ContactConsultationPortal from './pages/contact-consultation-portal';
-import AcceptInvite from './pages/AcceptInvite';
 
 // Auth Pages
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import SetupProfile from './pages/admin/SetupProfile';
+import AuthCallback from './pages/AuthCallback';
+import NotFound from './pages/NotFound';
+import NoAccess from './pages/NoAccess';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/Dashboard';
+import SetupProfile from './pages/admin/SetupProfile';
+
+// Admin Features - Check which actually exist
 import AdminServices from './pages/admin/services/Services';
 import AdminArticles from './pages/admin/articles/Articles';
 import AdminCaseStudies from './pages/admin/case-studies/CaseStudies';
@@ -39,20 +25,13 @@ import AdminProfiles from './pages/admin/profiles/Profiles';
 import AdminSettings from './pages/admin/settings/Settings';
 import AdminLeads from './pages/admin/Leads';
 import AdminAnalytics from './pages/admin/Analytics';
+
+// Client Management
 import AdminClients from './pages/admin/clients/Clients';
 import InviteClient from './pages/admin/clients/InviteClient';
 import ClientInvitations from './pages/admin/clients/Invitations';
 import ClientDetail from './pages/admin/clients/ClientDetail';
 import EditClient from './pages/admin/clients/EditClient';
-
-// Client Pages
-import ClientLayout from './pages/client/ClientLayout';
-import ClientDashboard from './pages/client/Dashboard';
-import ClientProjects from './pages/client/Projects';
-import ClientInvoices from './pages/client/Invoices';
-import ClientSupport from './pages/client/Support';
-import ClientProfile from './pages/client/Profile';
-import ClientSetupProfile from './pages/client/ClientSetupProfile';
 
 // Utils
 import ProtectedRoute from './components/ProtectedRoute';
@@ -286,114 +265,12 @@ const AuthCallback = () => {
 
 // Enhanced Routes Component with Event Integration for all modules
 const Routes = ({ session }) => {
-  const { emit: emitArticle, subscribeToEvents: subscribeArticle } = useArticleEvents();
-  const { emit: emitCaseStudy, subscribeToEvents: subscribeCaseStudy } = useCaseStudyEvents();
-  const { emit: emitService, subscribeToEvents: subscribeService } = useServiceEvents();
-  const { emit: emitProfile, subscribeToEvents: subscribeProfile } = useProfileEvents();
-  const { emit: emitSettings, subscribeToEvents: subscribeSettings } = useSettingsEvents();
-
-  // Set up global route change tracking
-  useEffect(() => {
-    // Track route changes for analytics
-    const handleRouteChange = () => {
-      const routeData = {
-        path: window.location.pathname,
-        timestamp: Date.now(),
-        session: session?.user?.id || null
-      };
-      emitArticle('navigation:route_changed', routeData);
-      emitCaseStudy('navigation:route_changed', routeData);
-      emitService('navigation:route_changed', routeData);
-      emitProfile('navigation:route_changed', routeData);
-      emitSettings('navigation:route_changed', routeData);
-    };
-
-    // Listen for popstate events (back/forward navigation)
-    window.addEventListener('popstate', handleRouteChange);
-    
-    // Emit initial route
-    handleRouteChange();
-
-    return () => {
-      window.removeEventListener('popstate', handleRouteChange);
-    };
-  }, [emitArticle, emitCaseStudy, emitService, emitProfile, emitSettings, session]);
-
-  // Set up session change tracking
-  useEffect(() => {
-    if (session) {
-      const sessionData = {
-        userId: session.user.id,
-        email: session.user.email,
-        timestamp: Date.now()
-      };
-      emitArticle('session:established', sessionData);
-      emitCaseStudy('session:established', sessionData);
-      emitService('session:established', sessionData);
-      emitProfile('session:established', sessionData);
-      emitSettings('session:established', sessionData);
-    } else {
-      const clearedData = {
-        timestamp: Date.now()
-      };
-      emitArticle('session:cleared', clearedData);
-      emitCaseStudy('session:cleared', clearedData);
-      emitService('session:cleared', clearedData);
-      emitProfile('session:cleared', clearedData);
-      emitSettings('session:cleared', clearedData);
-    }
-  }, [session, emitArticle, emitCaseStudy, emitService, emitProfile, emitSettings]);
-
-  // Set up global error handling for admin routes
-  useEffect(() => {
-    const unsubscribeArticle = subscribeArticle('admin:error', (error) => {
-      console.error('Admin error detected (articles):', error);
-    });
-
-    const unsubscribeCaseStudy = subscribeCaseStudy('admin:error', (error) => {
-      console.error('Admin error detected (case studies):', error);
-    });
-
-    const unsubscribeService = subscribeService('admin:error', (error) => {
-      console.error('Admin error detected (services):', error);
-    });
-
-    const unsubscribeProfile = subscribeProfile('admin:error', (error) => {
-      console.error('Admin error detected (profiles):', error);
-    });
-
-    const unsubscribeSettings = subscribeSettings('admin:error', (error) => {
-      console.error('Admin error detected (settings):', error);
-    });
-
-    return () => {
-      unsubscribeArticle();
-      unsubscribeCaseStudy();
-      unsubscribeService();
-      unsubscribeProfile();
-      unsubscribeSettings();
-    };
-  }, [subscribeArticle, subscribeCaseStudy, subscribeService, subscribeProfile, subscribeSettings]);
-
   return (
     <BrowserRouter>
       <ErrorBoundary>
         <ScrollToTop />
         <RouterRoutes>
-          {/* Public Routes */}
-          <Route path="/" element={<HomepageExperienceHub />} />
-          <Route path="/capabilities" element={<CapabilityUniverse />} />
-          <Route path="/innovation" element={<InnovationLaboratory />} />
-          <Route path="/work" element={<WorkShowcaseTheater />} />
-          <Route path="/case-study/:slug" element={<CaseStudyDetail />} />
-          <Route path="/articles" element={<ArticlesHub />} />
-          <Route path="/about" element={<AboutProcessStudio />} />
-          <Route path="/contact" element={<ContactConsultationPortal />} />
-
-          {/* Add this public route for accepting invites */}
-          <Route path="/accept-invite" element={<AcceptInvite />} />
-
-          {/* Auth Routes - Unified Login */}
+          {/* Public Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -406,9 +283,9 @@ const Routes = ({ session }) => {
               <ClientSetupProfile />
             </ProtectedRoute>
           } />
-
-          {/* Protected Admin Routes - For admin, contributor, and client_manager roles */}
-          <Route path="/admin" element={
+          
+          {/* Protected Admin Routes */}
+          <Route path="/" element={
             <ProtectedRoute session={session} requiredRoles={['admin', 'contributor', 'client_manager']}>
               <AdminLayout />
             </ProtectedRoute>
@@ -417,8 +294,10 @@ const Routes = ({ session }) => {
             <Route path="services" element={<AdminServices />} />
             <Route path="articles" element={<AdminArticles />} />
             <Route path="case-studies" element={<AdminCaseStudies />} />
+            <Route path="leads" element={<AdminLeads />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
             
-            {/* Only admins can see profiles and settings */}
+            {/* Admin-only routes */}
             <Route path="profiles" element={
               <ProtectedRoute session={session} requiredRoles={['admin']}>
                 <AdminProfiles />
@@ -430,19 +309,19 @@ const Routes = ({ session }) => {
               </ProtectedRoute>
             } />
             
-            {/* Admins and client managers can manage clients */}
+            {/* Client management - Admin and Client Manager */}
             <Route path="clients" element={
               <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
                 <AdminClients />
               </ProtectedRoute>
             } />
             <Route path="clients/invite" element={
-              <ProtectedRoute session={session} requiredRoles={['admin']}>
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
                 <InviteClient />
               </ProtectedRoute>
             } />
             <Route path="clients/invitations" element={
-              <ProtectedRoute session={session} requiredRoles={['admin']}>
+              <ProtectedRoute session={session} requiredRoles={['admin', 'client_manager']}>
                 <ClientInvitations />
               </ProtectedRoute>
             } />
@@ -456,26 +335,9 @@ const Routes = ({ session }) => {
                 <EditClient />
               </ProtectedRoute>
             } />
-            
-            <Route path="profile" element={<SetupProfile />} />
-            <Route path="leads" element={<AdminLeads />} />
-            <Route path="analytics" element={<AdminAnalytics />} />
-          </Route>
-
-          {/* Protected Client Portal Routes - For standard role (paying clients) */}
-          <Route path="/client" element={
-            <ProtectedRoute session={session} requiredRoles={['standard']}>
-              <ClientLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<ClientDashboard />} />
-            <Route path="projects" element={<ClientProjects />} />
-            <Route path="invoices" element={<ClientInvoices />} />
-            <Route path="support" element={<ClientSupport />} />
-            <Route path="profile" element={<ClientProfile />} />
           </Route>
           
-          {/* 404 - Not Found */}
+          {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </RouterRoutes>
       </ErrorBoundary>
