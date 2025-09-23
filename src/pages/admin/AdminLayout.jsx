@@ -146,11 +146,22 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
     }
   };
 
+  // Fixed isActivePath function to prevent multiple active states
   const isActivePath = (path) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin';
+    // For root/dashboard path, require exact match
+    if (path === '/') {
+      return location.pathname === '/' || location.pathname === '';
     }
-    return location.pathname.startsWith(path);
+    
+    // For other paths, check if it matches exactly or is a subpath
+    // But ensure we're not matching partial path names
+    if (location.pathname === path) {
+      return true;
+    }
+    
+    // Check if it's a subpath (e.g., /profiles/123 matches /profiles)
+    // But make sure it's followed by a slash to avoid /profile matching /profiles
+    return location.pathname.startsWith(path + '/');
   };
 
   const handleRefreshSession = async () => {
@@ -180,6 +191,10 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
       default:
         return role || 'User';
     }
+  };
+
+  const handleViewSite = () => {
+    window.location.href = 'https://www.rule27design.com';
   };
 
   return (
@@ -234,7 +249,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         <div className="flex h-full flex-col overflow-hidden">
           {/* Logo */}
           <div className={`flex h-16 items-center border-b flex-shrink-0 ${sidebarOpen ? 'px-6' : 'px-5 justify-center'}`}>
-            <Link to="/admin" className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 flex-shrink-0">
                 <img 
                   src="/assets/Logo/rule27-icon-color.png" 
@@ -323,19 +338,19 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
 
           {/* Bottom Actions - Fixed position */}
           <div className={`flex-shrink-0 border-t space-y-2 ${sidebarOpen ? 'p-4' : 'p-2'}`}>
-            <Link
-              to="/"
+            <button
+              onClick={handleViewSite}
               className={`
-                flex items-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors
+                w-full flex items-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors
                 ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
               `}
               title={!sidebarOpen ? 'View Site' : ''}
             >
               <Icon name="Home" size={20} className="flex-shrink-0" />
               {sidebarOpen && <span>View Site</span>}
-            </Link>
+            </button>
             <Link
-              to="/admin/profile"
+              to="/my-profile"
               className={`
                 flex items-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors
                 ${sidebarOpen ? 'px-3 py-2 space-x-3' : 'p-3 justify-center'}
@@ -368,7 +383,7 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b">
-            <Link to="/admin" className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className="w-10 h-10">
                 <img 
                   src="/assets/Logo/rule27-icon-color.png" 
@@ -441,15 +456,15 @@ const AdminLayout = ({ userProfile, setUserProfile }) => {
 
           {/* Bottom Actions */}
           <div className="border-t p-4 space-y-2">
-            <Link
-              to="https://www.rule27design.com"
-              className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            <button
+              onClick={handleViewSite}
+              className="w-full flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Icon name="Home" size={20} />
               <span>View Site</span>
-            </Link>
+            </button>
             <Link
-              to="/profile"
+              to="/my-profile"
               className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Icon name="User" size={20} />
