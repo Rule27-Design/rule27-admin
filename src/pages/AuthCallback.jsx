@@ -138,14 +138,9 @@ const AuthCallback = () => {
     // STEP 3: Route based on role
     else if (profile.role === 'admin' || profile.role === 'contributor') {
       console.log('Redirecting to admin dashboard');
-      navigate('/admin');
+      navigate('/');
     }
-    // STEP 4: Standard users go to client portal
-    else if (profile.role === 'standard') {
-      console.log('Redirecting to client portal');
-      navigate('/client');
-    }
-    // STEP 5: Unknown role - redirect to home
+    // STEP 4: Unknown role - redirect to home
     else {
       console.log('Unknown role, redirecting to home');
       navigate('/');
