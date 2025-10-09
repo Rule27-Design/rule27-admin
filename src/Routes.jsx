@@ -155,7 +155,7 @@ const AuthCallback = () => {
       }
     } else if (profile.role === 'admin' || profile.role === 'contributor' || profile.role === 'client_manager') {
       console.log('Redirecting to admin dashboard');
-      navigate('/admin');
+      navigate('/');
     } else if (profile.role === 'standard') {
       console.log('Redirecting to client portal');
       navigate('/client');
