@@ -40,11 +40,7 @@ import { supabase } from './lib/supabase';
 // Auth Callback Component with Event Integration and Role-Based Routing
 const AuthCallback = () => {
   const navigate = useNavigate();
-  const { emit: emitArticle } = useArticleEvents();
-  const { emit: emitCaseStudy } = useCaseStudyEvents();
-  const { emit: emitService } = useServiceEvents();
-  const { emit: emitProfile } = useProfileEvents();
-  const { emit: emitSettings } = useSettingsEvents();
+  // Removed event hook usage that was causing errors
 
   React.useEffect(() => {
     handleAuthCallback();
@@ -52,40 +48,17 @@ const AuthCallback = () => {
 
   const handleAuthCallback = async () => {
     try {
-      // Emit authentication start events to all modules
-      emitArticle('auth:callback_started', { timestamp: Date.now() });
-      emitCaseStudy('auth:callback_started', { timestamp: Date.now() });
-      emitService('auth:callback_started', { timestamp: Date.now() });
-      emitProfile('auth:callback_started', { timestamp: Date.now() });
-      emitSettings('auth:callback_started', { timestamp: Date.now() });
-
       // Get the session from the URL
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
         console.error('Session error:', error);
-        emitArticle('auth:callback_failed', { error: error.message });
-        emitCaseStudy('auth:callback_failed', { error: error.message });
-        emitService('auth:callback_failed', { error: error.message });
-        emitProfile('auth:callback_failed', { error: error.message });
-        emitSettings('auth:callback_failed', { error: error.message });
         navigate('/login');
         return;
       }
       
       if (session) {
         console.log('Session found for:', session.user.email);
-        
-        // Emit successful authentication events
-        const authData = { 
-          userId: session.user.id, 
-          email: session.user.email 
-        };
-        emitArticle('auth:session_found', authData);
-        emitCaseStudy('auth:session_found', authData);
-        emitService('auth:session_found', authData);
-        emitProfile('auth:session_found', authData);
-        emitSettings('auth:session_found', authData);
         
         // Wait a moment for the trigger to create/update the profile
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -104,12 +77,6 @@ const AuthCallback = () => {
         // If no profile exists, create one
         if (!profile) {
           console.log('Creating profile for new user');
-          const profileCreatingData = { userId: session.user.id };
-          emitArticle('auth:profile_creating', profileCreatingData);
-          emitCaseStudy('auth:profile_creating', profileCreatingData);
-          emitService('auth:profile_creating', profileCreatingData);
-          emitProfile('auth:profile_creating', profileCreatingData);
-          emitSettings('auth:profile_creating', profileCreatingData);
           
           const userData = session.user.user_metadata;
           const { data: newProfile, error: createError } = await supabase
@@ -128,15 +95,6 @@ const AuthCallback = () => {
           
           if (createError) {
             console.error('Profile creation error:', createError);
-            const errorData = { 
-              userId: session.user.id, 
-              error: createError.message 
-            };
-            emitArticle('auth:profile_creation_failed', errorData);
-            emitCaseStudy('auth:profile_creation_failed', errorData);
-            emitService('auth:profile_creation_failed', errorData);
-            emitProfile('auth:profile_creation_failed', errorData);
-            emitSettings('auth:profile_creation_failed', errorData);
             
             // Try to fetch existing profile by email
             const { data: existingProfile } = await supabase
@@ -152,52 +110,22 @@ const AuthCallback = () => {
                 .update({ auth_user_id: session.user.id })
                 .eq('id', existingProfile.id);
               
-              const linkedData = { profileId: existingProfile.id };
-              emitArticle('auth:profile_linked', linkedData);
-              emitCaseStudy('auth:profile_linked', linkedData);
-              emitService('auth:profile_linked', linkedData);
-              emitProfile('auth:profile_linked', linkedData);
-              emitSettings('auth:profile_linked', linkedData);
               handleNavigation(session, existingProfile);
             } else {
               navigate('/login');
             }
           } else {
-            const createdData = { profileId: newProfile.id };
-            emitArticle('auth:profile_created', createdData);
-            emitCaseStudy('auth:profile_created', createdData);
-            emitService('auth:profile_created', createdData);
-            emitProfile('auth:profile_created', createdData);
-            emitSettings('auth:profile_created', createdData);
             handleNavigation(session, newProfile);
           }
         } else {
-          const foundData = { profileId: profile.id, role: profile.role };
-          emitArticle('auth:profile_found', foundData);
-          emitCaseStudy('auth:profile_found', foundData);
-          emitService('auth:profile_found', foundData);
-          emitProfile('auth:profile_found', foundData);
-          emitSettings('auth:profile_found', foundData);
           handleNavigation(session, profile);
         }
       } else {
         console.log('No session found');
-        const noSessionData = {};
-        emitArticle('auth:no_session', noSessionData);
-        emitCaseStudy('auth:no_session', noSessionData);
-        emitService('auth:no_session', noSessionData);
-        emitProfile('auth:no_session', noSessionData);
-        emitSettings('auth:no_session', noSessionData);
         navigate('/login');
       }
     } catch (error) {
       console.error('Auth callback error:', error);
-      const errorData = { error: error.message };
-      emitArticle('auth:callback_error', errorData);
-      emitCaseStudy('auth:callback_error', errorData);
-      emitService('auth:callback_error', errorData);
-      emitProfile('auth:callback_error', errorData);
-      emitSettings('auth:callback_error', errorData);
       navigate('/login');
     }
   };
@@ -214,21 +142,6 @@ const AuthCallback = () => {
       profileCompleted,
       role: profile.role
     });
-
-    // Emit navigation decision events
-    const navData = {
-      userId: session.user.id,
-      profileId: profile.id,
-      hasPassword,
-      isFirstLogin,
-      profileCompleted,
-      role: profile.role
-    };
-    emitArticle('auth:navigation_decision', navData);
-    emitCaseStudy('auth:navigation_decision', navData);
-    emitService('auth:navigation_decision', navData);
-    emitProfile('auth:navigation_decision', navData);
-    emitSettings('auth:navigation_decision', navData);
     
     // Route based on role and onboarding status
     if (!profileCompleted) {
