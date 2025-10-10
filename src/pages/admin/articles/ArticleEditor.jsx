@@ -35,41 +35,49 @@ const ArticleEditor = ({
   const [categories, setCategories] = useState([]);
   const [authors, setAuthors] = useState([]);
   
-  // Initialize form data
+  // Initialize form data - UPDATED with missing fields
   const initialData = {
-  title: '',
-  slug: '',
-  excerpt: '',
-  content: null,
-  featured_image: '',
-  featured_image_alt: '',
-  featured_video: '',
-  gallery_images: [],
-  author_id: userProfile?.id || '',
-  co_authors: [],
-  category_id: '',
-  tags: [],
-  status: 'draft',
-  scheduled_at: '',
-  is_featured: false,
-  enable_comments: false,
-  enable_reactions: true,
-  meta_title: '',
-  meta_description: '',
-  meta_keywords: [],
-  og_title: '',
-  og_description: '',
-  og_image: '',
-  twitter_card: 'summary_large_image',
-  canonical_url: '',
-  internal_notes: '',
-  read_time: null,
-  view_count: 0,
-  like_count: 0,
-  share_count: 0,
-  bookmark_count: 0,
-  ...article
-};
+    title: article?.title || '',
+    slug: article?.slug || '',
+    excerpt: article?.excerpt || '',
+    content: article?.content || null,
+    featured_image: article?.featured_image || '',
+    featured_image_alt: article?.featured_image_alt || '',
+    featured_video: article?.featured_video || '',
+    gallery_images: article?.gallery_images || [],
+    author_id: article?.author_id || userProfile?.id || '',
+    co_authors: article?.co_authors || [],
+    category_id: article?.category_id || '',
+    tags: article?.tags || [],
+    status: article?.status || 'draft',
+    published_at: article?.published_at || '',  // ADDED
+    scheduled_at: article?.scheduled_at || '',
+    is_featured: article?.is_featured || false,
+    enable_comments: article?.enable_comments || false,
+    enable_reactions: article?.enable_reactions !== false,
+    meta_title: article?.meta_title || '',
+    meta_description: article?.meta_description || '',
+    meta_keywords: article?.meta_keywords || [],
+    og_title: article?.og_title || '',
+    og_description: article?.og_description || '',
+    og_image: article?.og_image || '',
+    twitter_card: article?.twitter_card || 'summary_large_image',
+    canonical_url: article?.canonical_url || '',
+    internal_notes: article?.internal_notes || '',
+    read_time: article?.read_time || null,
+    sort_order: article?.sort_order || 0,  // ADDED
+    version: article?.version || 1,  // ADDED
+    view_count: article?.view_count || 0,
+    unique_view_count: article?.unique_view_count || 0,  // ADDED
+    like_count: article?.like_count || 0,
+    share_count: article?.share_count || 0,
+    bookmark_count: article?.bookmark_count || 0,
+    average_read_depth: article?.average_read_depth || null,  // ADDED
+    average_time_on_page: article?.average_time_on_page || null,  // ADDED
+    id: article?.id || null,  // ADDED for reference
+    created_at: article?.created_at || null,  // ADDED
+    updated_at: article?.updated_at || null  // ADDED
+  };
 
   const [formData, setFormData] = useState(initialData);
   const [isDirty, setIsDirty] = useState(false);
@@ -77,11 +85,11 @@ const ArticleEditor = ({
   // Form validation
   const { errors, validateForm, clearError, getTabErrors } = useFormValidation();
 
-  // Auto-save functionality (only for existing articles)
+  // Auto-save functionality (only for existing articles) - UPDATED callback
   const { saveStatus, triggerAutoSave } = useAutoSave(
     formData, 
     article?.id,
-    article?.id ? true : false
+    article?.id ? () => handleSave(true) : null  // UPDATED: pass auto-save flag
   );
 
   // Fetch related data (categories and authors)
@@ -166,25 +174,31 @@ const ArticleEditor = ({
     clearError(field);
   }, [clearError, article]);
 
-  // Handle save
-  const handleSave = async () => {
+  // Handle save - UPDATED to support auto-save flag
+  const handleSave = async (autoSave = false) => {
     setSaving(true);
     
-    // Validate form
-    const validationErrors = validateForm(formData);
-    if (Object.keys(validationErrors).length > 0) {
-      // Find the first tab with errors and switch to it
-      const tabsWithErrors = getTabsWithErrors(validationErrors);
-      if (tabsWithErrors.length > 0) {
-        setActiveTab(tabsWithErrors[0]);
+    // Skip validation for auto-save
+    if (!autoSave) {
+      // Validate form
+      const validationErrors = validateForm(formData);
+      if (Object.keys(validationErrors).length > 0) {
+        // Find the first tab with errors and switch to it
+        const tabsWithErrors = getTabsWithErrors(validationErrors);
+        if (tabsWithErrors.length > 0) {
+          setActiveTab(tabsWithErrors[0]);
+        }
+        
+        toast.error('Validation failed', 'Please fix the errors before saving');
+        setSaving(false);
+        return false;
       }
-      
-      toast.error('Validation failed', 'Please fix the errors before saving');
-      setSaving(false);
-      return false;
     }
 
-    const sanitized = sanitizeData(formData);
+    const sanitized = sanitizeData({
+      ...formData,
+      auto_save: autoSave  // ADDED: Pass auto-save flag to operations
+    });
     
     // Ensure author_id is set
     if (!sanitized.author_id) {
@@ -204,10 +218,12 @@ const ArticleEditor = ({
     }
 
     if (result.success) {
-      toast.success(
-        article ? 'Article updated' : 'Article created',
-        `"${formData.title}" has been saved successfully`
-      );
+      if (!autoSave) {  // Only show toast for manual saves
+        toast.success(
+          article ? 'Article updated' : 'Article created',
+          `"${formData.title}" has been saved successfully`
+        );
+      }
       
       if (onSave) {
         await onSave(result.data);
@@ -215,16 +231,37 @@ const ArticleEditor = ({
       setSaving(false);
       return true;
     } else {
-      toast.error('Save failed', result.error);
+      if (!autoSave) {  // Only show error for manual saves
+        toast.error('Save failed', result.error);
+      }
       setSaving(false);
       return false;
     }
   };
 
-  // Handle save with status change
+  // Handle save with status change - UPDATED for publish date
   const handleSaveWithStatus = async (status) => {
-    setFormData(prev => ({ ...prev, status }));
+    setFormData(prev => {
+      const updated = { ...prev, status };
+      
+      // Set published_at when publishing
+      if (status === 'published' && !prev.published_at) {
+        updated.published_at = new Date().toISOString();
+      }
+      
+      return updated;
+    });
     // Use setTimeout to ensure state updates before saving
+    setTimeout(() => handleSave(), 100);
+  };
+
+  // ADDED: Handle scheduling
+  const handleSchedule = async (scheduledDate) => {
+    setFormData(prev => ({
+      ...prev,
+      scheduled_at: scheduledDate,
+      status: 'scheduled'
+    }));
     setTimeout(() => handleSave(), 100);
   };
 
@@ -286,73 +323,73 @@ const ArticleEditor = ({
 
   // Render preview
   const renderPreview = () => (
-  <div className="prose prose-lg max-w-none">
-    {formData.featured_image && (
-      <img 
-        src={formData.featured_image} 
-        alt={formData.featured_image_alt || formData.title}
-        className="w-full rounded-lg mb-6"
-      />
-    )}
-    
-    <h1 className="text-4xl font-bold mb-4">
-      {formData.title || 'Untitled Article'}
-    </h1>
-    
-    <div className="flex items-center space-x-4 text-gray-500 mb-6">
-      <span>By {userProfile?.full_name || 'Author'}</span>
-      <span>•</span>
-      <span>{formData.read_time || 1} min read</span>
+    <div className="prose prose-lg max-w-none">
+      {formData.featured_image && (
+        <img 
+          src={formData.featured_image} 
+          alt={formData.featured_image_alt || formData.title}
+          className="w-full rounded-lg mb-6"
+        />
+      )}
+      
+      <h1 className="text-4xl font-bold mb-4">
+        {formData.title || 'Untitled Article'}
+      </h1>
+      
+      <div className="flex items-center space-x-4 text-gray-500 mb-6">
+        <span>By {userProfile?.full_name || 'Author'}</span>
+        <span>•</span>
+        <span>{formData.read_time || 1} min read</span>
+      </div>
+      
+      {formData.excerpt && (
+        <p className="lead text-xl text-gray-600 mb-6">
+          {formData.excerpt}
+        </p>
+      )}
+      
+      {formData.content?.html ? (
+        <div dangerouslySetInnerHTML={{ __html: formData.content.html }} />
+      ) : (
+        <p className="text-gray-400 italic">No content yet...</p>
+      )}
+      
+      {/* Gallery Images */}
+      {formData.gallery_images && formData.gallery_images.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-4">Gallery</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {formData.gallery_images.map((image, index) => (
+              <figure key={index} className="mb-4">
+                <img
+                  src={image.url}
+                  alt={image.alt || `Gallery image ${index + 1}`}
+                  className="w-full rounded-lg"
+                />
+                {image.caption && (
+                  <figcaption className="text-sm text-gray-600 mt-2 text-center">
+                    {image.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {formData.tags && formData.tags.length > 0 && (
+        <div className="mt-8 pt-8 border-t">
+          <div className="flex flex-wrap gap-2">
+            {formData.tags.map((tag, index) => (
+              <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-    
-    {formData.excerpt && (
-      <p className="lead text-xl text-gray-600 mb-6">
-        {formData.excerpt}
-      </p>
-    )}
-    
-    {formData.content?.html ? (
-      <div dangerouslySetInnerHTML={{ __html: formData.content.html }} />
-    ) : (
-      <p className="text-gray-400 italic">No content yet...</p>
-    )}
-    
-    {/* Gallery Images */}
-    {formData.gallery_images && formData.gallery_images.length > 0 && (
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Gallery</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {formData.gallery_images.map((image, index) => (
-            <figure key={index} className="mb-4">
-              <img
-                src={image.url}
-                alt={image.alt || `Gallery image ${index + 1}`}
-                className="w-full rounded-lg"
-              />
-              {image.caption && (
-                <figcaption className="text-sm text-gray-600 mt-2 text-center">
-                  {image.caption}
-                </figcaption>
-              )}
-            </figure>
-          ))}
-        </div>
-      </div>
-    )}
-    
-    {formData.tags && formData.tags.length > 0 && (
-      <div className="mt-8 pt-8 border-t">
-        <div className="flex flex-wrap gap-2">
-          {formData.tags.map((tag, index) => (
-            <span key={index} className="px-3 py-1 bg-gray-100 rounded-full text-sm">
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-    )}
-  </div>
-);
+  );
 
   // Modal actions
   const modalActions = [
@@ -363,6 +400,21 @@ const ArticleEditor = ({
       variant: 'ghost'
     }
   ];
+
+  // ADDED: Add schedule action for draft articles
+  if (formData.status === 'draft') {
+    modalActions.push({
+      label: 'Schedule',
+      icon: 'Calendar',
+      onClick: () => {
+        const scheduledDate = prompt('Enter scheduled date (YYYY-MM-DD HH:MM):');
+        if (scheduledDate) {
+          handleSchedule(scheduledDate);
+        }
+      },
+      variant: 'ghost'
+    });
+  }
 
   // Add publish action for admins
   if (userProfile?.role === 'admin' && formData.status !== 'published') {
@@ -381,7 +433,13 @@ const ArticleEditor = ({
         onClose={onClose}
         onSave={handleSave}
         title={article ? `Edit: ${article.title}` : 'New Article'}
-        subtitle={saveStatus === 'saving' ? 'Auto-saving...' : saveStatus === 'saved' ? 'All changes saved' : ''}
+        subtitle={
+          <>
+            {saveStatus === 'saving' && 'Auto-saving...'}
+            {saveStatus === 'saved' && 'All changes saved'}
+            {formData.version > 1 && ` • Version ${formData.version}`}
+          </>
+        }
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}

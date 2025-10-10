@@ -13,7 +13,6 @@ const SettingsTab = ({ formData, errors, onChange }) => {
         data={formData} 
         config="article"
         onScoreChange={(score) => {
-          // Optionally track the score in formData
           if (score !== formData.qualityScore) {
             onChange('qualityScore', score);
           }
@@ -31,6 +30,8 @@ const SettingsTab = ({ formData, errors, onChange }) => {
             onChange={(value) => onChange('status', value)}
             options={[
               { value: 'draft', label: 'Draft' },
+              { value: 'pending_approval', label: 'Pending Approval' },
+              { value: 'approved', label: 'Approved' },
               { value: 'published', label: 'Published' },
               { value: 'scheduled', label: 'Scheduled' },
               { value: 'archived', label: 'Archived' }
@@ -38,16 +39,45 @@ const SettingsTab = ({ formData, errors, onChange }) => {
             error={errors.status}
           />
 
+          {/* Publish Date - Show for published articles or when setting to published */}
+          {(formData.status === 'published' || formData.published_at) && (
+            <Input
+              type="datetime-local"
+              label="Publish Date"
+              value={formData.published_at ? 
+                new Date(formData.published_at).toISOString().slice(0, 16) : 
+                new Date().toISOString().slice(0, 16)
+              }
+              onChange={(e) => onChange('published_at', e.target.value)}
+              error={errors.published_at}
+              helperText="Set the official publish date for this article"
+            />
+          )}
+
+          {/* Schedule Date - Show for scheduled articles */}
           {formData.status === 'scheduled' && (
             <Input
               type="datetime-local"
               label="Schedule Publication"
-              value={formData.scheduled_at}
+              value={formData.scheduled_at ? 
+                new Date(formData.scheduled_at).toISOString().slice(0, 16) : ''
+              }
               onChange={(e) => onChange('scheduled_at', e.target.value)}
               error={errors.scheduled_at}
               required
+              helperText="Article will be automatically published at this time"
             />
           )}
+
+          {/* Sort Order */}
+          <Input
+            type="number"
+            label="Sort Order"
+            value={formData.sort_order || 0}
+            onChange={(e) => onChange('sort_order', parseInt(e.target.value))}
+            error={errors.sort_order}
+            helperText="Lower numbers appear first"
+          />
 
           <div className="space-y-3">
             <Checkbox
@@ -94,28 +124,54 @@ const SettingsTab = ({ formData, errors, onChange }) => {
           <h3 className="text-sm font-medium text-gray-900 mb-3">Article Information</h3>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
+              <dt className="text-gray-500">Article ID:</dt>
+              <dd className="text-gray-900 font-mono text-xs">
+                {formData.id}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Version:</dt>
+              <dd className="text-gray-900">
+                {formData.version || 1}
+              </dd>
+            </div>
+            <div className="flex justify-between">
               <dt className="text-gray-500">Created:</dt>
               <dd className="text-gray-900">
-                {formData.created_at ? new Date(formData.created_at).toLocaleDateString() : 'N/A'}
+                {formData.created_at ? 
+                  new Date(formData.created_at).toLocaleString() : 'N/A'}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Last Updated:</dt>
               <dd className="text-gray-900">
-                {formData.updated_at ? new Date(formData.updated_at).toLocaleDateString() : 'N/A'}
+                {formData.updated_at ? 
+                  new Date(formData.updated_at).toLocaleString() : 'N/A'}
               </dd>
             </div>
             {formData.published_at && (
               <div className="flex justify-between">
                 <dt className="text-gray-500">Published:</dt>
                 <dd className="text-gray-900">
-                  {new Date(formData.published_at).toLocaleDateString()}
+                  {new Date(formData.published_at).toLocaleString()}
+                </dd>
+              </div>
+            )}
+            {formData.scheduled_at && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Scheduled:</dt>
+                <dd className="text-gray-900">
+                  {new Date(formData.scheduled_at).toLocaleString()}
                 </dd>
               </div>
             )}
             <div className="flex justify-between">
               <dt className="text-gray-500">Views:</dt>
               <dd className="text-gray-900">{formData.view_count || 0}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Unique Views:</dt>
+              <dd className="text-gray-900">{formData.unique_view_count || 0}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Likes:</dt>
@@ -126,9 +182,29 @@ const SettingsTab = ({ formData, errors, onChange }) => {
               <dd className="text-gray-900">{formData.share_count || 0}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-500">Comments:</dt>
-              <dd className="text-gray-900">{formData.comment_count || 0}</dd>
+              <dt className="text-gray-500">Bookmarks:</dt>
+              <dd className="text-gray-900">{formData.bookmark_count || 0}</dd>
             </div>
+            <div className="flex justify-between">
+              <dt className="text-gray-500">Read Time:</dt>
+              <dd className="text-gray-900">
+                {formData.read_time ? `${formData.read_time} min` : 'N/A'}
+              </dd>
+            </div>
+            {formData.average_read_depth && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Avg Read Depth:</dt>
+                <dd className="text-gray-900">{formData.average_read_depth}%</dd>
+              </div>
+            )}
+            {formData.average_time_on_page && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Avg Time on Page:</dt>
+                <dd className="text-gray-900">
+                  {Math.floor(formData.average_time_on_page / 60)}m {formData.average_time_on_page % 60}s
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
@@ -140,6 +216,8 @@ const SettingsTab = ({ formData, errors, onChange }) => {
           <li>• Aim for a quality score of 60% or higher before publishing</li>
           <li>• Schedule posts for optimal engagement times (10am or 2pm)</li>
           <li>• Featured articles appear on the homepage carousel</li>
+          <li>• Published date affects SEO and content freshness</li>
+          <li>• Use scheduling to maintain consistent content flow</li>
           <li>• Internal notes are only visible to editors and admins</li>
         </ul>
       </div>

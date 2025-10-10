@@ -6,16 +6,16 @@ class ArticleOperationsService {
   // Create article
   async create(articleData, userProfile) {
     try {
-        // Define all valid columns from your schema
+        // Define all valid columns from your schema - ADDED: published_at, sort_order, version
         const validColumns = [
         'title', 'slug', 'excerpt', 'content',
         'featured_image', 'featured_image_alt', 'featured_video',
         'author_id', 'co_authors', 'category_id', 'tags',
-        'status', 'scheduled_at', 'read_time',
+        'status', 'published_at', 'scheduled_at', 'read_time',
         'is_featured', 'enable_comments', 'enable_reactions',
         'meta_title', 'meta_description', 'meta_keywords',
         'og_title', 'og_description', 'og_image', 'twitter_card', 'canonical_url',
-        'schema_markup', 'internal_notes',
+        'schema_markup', 'internal_notes', 'sort_order', 'version',
         'created_by'
         ];
 
@@ -51,11 +51,26 @@ class ArticleOperationsService {
         sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
         }
 
+        // ADDED: Handle published_at field
+        if (sanitized.published_at === '') {
+        sanitized.published_at = null;
+        } else if (sanitized.published_at) {
+        sanitized.published_at = cleanTimestampField(sanitized.published_at);
+        }
+
+        // ADDED: Handle publishing logic
+        if (sanitized.status === 'published' && !sanitized.published_at) {
+        sanitized.published_at = new Date().toISOString();
+        }
+
         // Set author and creator
         if (userProfile) {
         sanitized.author_id = sanitized.author_id || userProfile.id;
         sanitized.created_by = userProfile.id;
         }
+
+        // ADDED: Initialize version
+        sanitized.version = 1;
 
         // Remove any null or empty string values for array fields
         if (sanitized.tags) {
@@ -85,7 +100,14 @@ class ArticleOperationsService {
   // Update article
   async update(articleId, articleData, userProfile) {
     try {
-        // Define all valid columns from your schema
+        // ADDED: Get current data for version tracking
+        const { data: currentData } = await supabase
+        .from('articles')
+        .select('*')
+        .eq('id', articleId)
+        .single();
+
+        // Define all valid columns from your schema - ADDED: published_at, sort_order, version
         const validColumns = [
         'title', 'slug', 'excerpt', 'content',
         'featured_image', 'featured_image_alt', 'featured_video',
@@ -98,7 +120,7 @@ class ArticleOperationsService {
         'average_read_depth', 'average_time_on_page',
         'meta_title', 'meta_description', 'meta_keywords',
         'og_title', 'og_description', 'og_image', 'twitter_card', 'canonical_url',
-        'schema_markup', 'internal_notes',
+        'schema_markup', 'internal_notes', 'sort_order', 'version',
         'created_by', 'updated_by'
         ];
 
@@ -128,6 +150,41 @@ class ArticleOperationsService {
         sanitized.scheduled_at = null;
         } else if (sanitized.scheduled_at) {
         sanitized.scheduled_at = cleanTimestampField(sanitized.scheduled_at);
+        }
+
+        // ADDED: Handle published_at field
+        if (sanitized.published_at === '') {
+        sanitized.published_at = null;
+        } else if (sanitized.published_at) {
+        sanitized.published_at = cleanTimestampField(sanitized.published_at);
+        }
+
+        // ADDED: Handle status changes and publishing logic
+        if (sanitized.status === 'published' && !sanitized.published_at) {
+        sanitized.published_at = new Date().toISOString();
+        }
+
+        // ADDED: When changing from scheduled to published
+        if (sanitized.status === 'published' && currentData?.status === 'scheduled') {
+        sanitized.published_at = sanitized.scheduled_at || new Date().toISOString();
+        sanitized.scheduled_at = null;
+        }
+
+        // ADDED: Handle approval workflow
+        if (sanitized.status === 'pending_approval' && currentData?.status !== 'pending_approval') {
+        sanitized.submitted_for_approval_at = new Date().toISOString();
+        }
+
+        if (sanitized.status === 'approved' && currentData?.status !== 'approved') {
+        sanitized.approved_at = new Date().toISOString();
+        if (userProfile) {
+            sanitized.approved_by = userProfile.id;
+        }
+        }
+
+        // ADDED: Increment version if not auto-saving
+        if (!articleData.auto_save) {
+        sanitized.version = (currentData?.version || 1) + 1;
         }
 
         // Add updated metadata
@@ -178,7 +235,7 @@ class ArticleOperationsService {
     }
   }
 
-  // Duplicate an article
+  // Duplicate an article - UPDATED to include version reset
   async duplicate(article, userProfile) {
     try {
       const duplicatedData = {
@@ -188,11 +245,17 @@ class ArticleOperationsService {
         slug: `${article.slug}-copy-${Date.now()}`,
         status: 'draft',
         view_count: 0,
+        unique_view_count: 0,
         like_count: 0,
         comment_count: 0,
         share_count: 0,
+        bookmark_count: 0,
         published_at: null,
         scheduled_at: null,
+        approved_at: null,
+        approved_by: null,
+        submitted_for_approval_at: null,
+        version: 1, // ADDED: Reset version for duplicated article
         created_at: undefined,
         updated_at: undefined,
         created_by: userProfile.id,
@@ -265,6 +328,7 @@ class ArticleOperationsService {
     }
   }
 
+  // All your existing methods remain exactly the same from here...
   // Bulk archive articles
   async bulkArchive(articleIds) {
     try {
@@ -662,6 +726,7 @@ class ArticleOperationsService {
         article.author_id = userProfile.id;
         article.created_by = userProfile.id;
         article.updated_by = userProfile.id;
+        article.version = 1; // ADDED: Set initial version for imported articles
         
         articles.push(article);
       }
