@@ -201,7 +201,7 @@ const ArticleEditor = ({
     });
     
     // Ensure author_id is set
-    if (!sanitized.author_id) {
+    if (!sanitized.author_id && !article?.id) {
       sanitized.author_id = userProfile?.id;
     }
     

@@ -1,4 +1,4 @@
-// src/pages/admin/articles/editor-tabs/ContentTab.jsx - Updated with all fields
+// src/pages/admin/articles/editor-tabs/ContentTab.jsx - Updated with Author selection
 import React from 'react';
 import TiptapContentEditor from '../../../../components/ui/TiptapContentEditor';
 import Input from '../../../../components/ui/Input';
@@ -98,7 +98,23 @@ const ContentTab = ({ formData, errors, onChange, userProfile, categories = [], 
           </div>
         </div>
 
+        {/* UPDATED: Author and Category row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Select
+            label="Author"
+            value={formData.author_id}
+            onChange={(value) => onChange('author_id', value)}
+            options={[
+              { value: '', label: 'Select author...' },
+              ...authors.map(author => ({ 
+                value: author.id, 
+                label: author.full_name 
+              }))
+            ]}
+            error={errors.author_id}
+            required
+          />
+
           <Select
             label="Category"
             value={formData.category_id}
@@ -110,44 +126,45 @@ const ContentTab = ({ formData, errors, onChange, userProfile, categories = [], 
             error={errors.category_id}
             required
           />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Co-Authors
-            </label>
-            <Select
-              value=""
-              onChange={(value) => addCoAuthor(value)}
-              options={[
-                { value: '', label: 'Add co-author...' },
-                ...authors
-                  .filter(author => 
-                    author.id !== userProfile?.id && 
-                    !formData.co_authors.includes(author.id)
-                  )
-                  .map(author => ({ value: author.id, label: author.full_name }))
-              ]}
-            />
-            {formData.co_authors.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {formData.co_authors.map(authorId => {
-                  const author = authors.find(a => a.id === authorId);
-                  return (
-                    <div key={authorId} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                      <span className="text-sm">{author?.full_name || 'Unknown'}</span>
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => removeCoAuthor(authorId)}
-                      >
-                        <Icon name="X" size={14} />
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        {/* Co-Authors - UPDATED to exclude main author */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Co-Authors
+          </label>
+          <Select
+            value=""
+            onChange={(value) => addCoAuthor(value)}
+            options={[
+              { value: '', label: 'Add co-author...' },
+              ...authors
+                .filter(author => 
+                  author.id !== formData.author_id &&  // UPDATED: Exclude main author
+                  !formData.co_authors.includes(author.id)
+                )
+                .map(author => ({ value: author.id, label: author.full_name }))
+            ]}
+          />
+          {formData.co_authors.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {formData.co_authors.map(authorId => {
+                const author = authors.find(a => a.id === authorId);
+                return (
+                  <div key={authorId} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                    <span className="text-sm">{author?.full_name || 'Unknown'}</span>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => removeCoAuthor(authorId)}
+                    >
+                      <Icon name="X" size={14} />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Tags */}
