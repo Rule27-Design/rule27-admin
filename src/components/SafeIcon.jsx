@@ -14,6 +14,26 @@ const iconMap = {
   'ChevronDown': LucideIcons.ChevronDown,
   'ChevronUp': LucideIcons.ChevronUp,
   
+  // Text Formatting (for TipTap toolbar)
+  'Bold': LucideIcons.Bold,
+  'Italic': LucideIcons.Italic,
+  'Underline': LucideIcons.Underline,
+  'Strikethrough': LucideIcons.Strikethrough,
+  'Code': LucideIcons.Code,
+  'Heading': LucideIcons.Heading,
+  
+  // Lists and Content (for TipTap toolbar)
+  'List': LucideIcons.List,
+  'ListOrdered': LucideIcons.ListOrdered,
+  'Quote': LucideIcons.Quote,
+  'Minus': LucideIcons.Minus,
+  
+  // Editor Actions (for TipTap toolbar)
+  'Undo': LucideIcons.Undo,
+  'Redo': LucideIcons.Redo,
+  'LinkOff': LucideIcons.Unlink,  
+  'Unlink': LucideIcons.Unlink,
+  
   // Actions
   'Plus': LucideIcons.Plus,
   'Edit': LucideIcons.Edit,
