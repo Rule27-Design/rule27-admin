@@ -1,6 +1,6 @@
 // src/pages/admin/settings/Settings.jsx
 import React, { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import Icon from '../../../components/AdminIcon';
 import Button from '../../../components/ui/Button';
 import { useSettings } from './hooks/useSettings';
@@ -13,10 +13,12 @@ import TestimonialManager from './components/TestimonialManager';
 import PartnershipManager from './components/PartnershipManager';
 import AwardManager from './components/AwardManager';
 import DepartmentManager from './components/DepartmentManager';
+import IntegrationManager from './components/IntegrationManager';
 
 const Settings = () => {
   const { userProfile } = useOutletContext();
-  const [activeTab, setActiveTab] = useState('categories');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'categories');
   const { data, loading, error, refresh } = useSettings();
   const { subscribeToEvents } = useSettingsEvents();
 
@@ -27,6 +29,12 @@ const Settings = () => {
     });
     return unsubscribe;
   }, [subscribeToEvents, refresh]);
+
+  // Sync tab to URL
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+  };
 
   if (loading) {
     return (
@@ -66,44 +74,32 @@ const Settings = () => {
     { id: 'testimonials', label: 'Testimonials', count: data.testimonials?.length || 0, icon: 'MessageSquare' },
     { id: 'partnerships', label: 'Partnerships', count: data.partnerships?.length || 0, icon: 'Handshake' },
     { id: 'awards', label: 'Awards', count: data.awards?.length || 0, icon: 'Award' },
-    { id: 'departments', label: 'Departments', count: data.departments?.length || 0, icon: 'Building' }
+    { id: 'departments', label: 'Departments', count: data.departments?.length || 0, icon: 'Building' },
+    { id: 'integrations', label: 'Integrations', count: null, icon: 'Plug' },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-heading-bold uppercase">Site Settings</h1>
-            <p className="text-sm text-gray-600 mt-1">Manage categories, tags, testimonials, and more</p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={refresh}
-            iconName="RefreshCw"
-          >
-            Refresh
-          </Button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex space-x-1 border-b overflow-x-auto">
-          {tabs.map(tab => (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="flex overflow-x-auto border-b">
+          {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 border-b-2 transition-colors whitespace-nowrap flex items-center space-x-2 ${
-                activeTab === tab.id 
+              onClick={() => handleTabChange(tab.id)}
+              className={`flex items-center space-x-2 px-4 py-3 border-b-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                activeTab === tab.id
                   ? 'border-accent text-accent' 
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
               <Icon name={tab.icon} size={16} />
               <span>{tab.label}</span>
-              <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-gray-100">
-                {tab.count}
-              </span>
+              {tab.count !== null && (
+                <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-gray-100">
+                  {tab.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -151,6 +147,11 @@ const Settings = () => {
             departments={data.departments || []} 
             userProfile={userProfile}
             onUpdate={refresh}
+          />
+        )}
+        {activeTab === 'integrations' && (
+          <IntegrationManager 
+            userProfile={userProfile}
           />
         )}
       </div>
