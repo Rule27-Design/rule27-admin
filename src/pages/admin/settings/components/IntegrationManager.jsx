@@ -1,3 +1,4 @@
+// src/pages/admin/settings/components/IntegrationManager.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import Icon from '../../../../components/AdminIcon';
@@ -148,6 +149,7 @@ const IntegrationManager = ({ userProfile }) => {
     default_category_id: null,
     category_author_map: [],
     auto_tag_rules: [],
+    auto_category_rules: [],
     strip_promotional_section: true,
     strip_recommended_links: true
   });
@@ -178,6 +180,26 @@ const IntegrationManager = ({ userProfile }) => {
     const updated = [...(config.category_author_map || [])];
     updated.splice(index, 1);
     updateConfig('category_author_map', updated);
+  };
+
+  // ---- Auto-Category Rules ----
+  const addCategoryRule = () => {
+    updateConfig('auto_category_rules', [
+      ...(config.auto_category_rules || []),
+      { keywords: [], category_id: '' }
+    ]);
+  };
+
+  const updateCategoryRule = (index, field, value) => {
+    const updated = [...(config.auto_category_rules || [])];
+    updated[index] = { ...updated[index], [field]: value };
+    updateConfig('auto_category_rules', updated);
+  };
+
+  const removeCategoryRule = (index) => {
+    const updated = [...(config.auto_category_rules || [])];
+    updated.splice(index, 1);
+    updateConfig('auto_category_rules', updated);
   };
 
   // ---- Auto-Tag Rules ----
@@ -474,6 +496,77 @@ const IntegrationManager = ({ userProfile }) => {
                 <Button variant="ghost" size="icon" onClick={() => removeMapping(index)}>
                   <Icon name="X" size={16} className="text-red-500" />
                 </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Auto-Category Rules */}
+      <section className="bg-white rounded-lg shadow p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium flex items-center space-x-2">
+            <Icon name="Folder" size={18} />
+            <span>Auto-Category Rules</span>
+          </h3>
+          <Button variant="ghost" size="sm" onClick={addCategoryRule}>
+            <Icon name="Plus" size={14} className="mr-1" />
+            Add Rule
+          </Button>
+        </div>
+
+        <p className="text-sm text-gray-500">
+          Automatically assign a category based on keyword matches. First match wins, 
+          then falls back to the default category above.
+        </p>
+
+        {(!config.auto_category_rules || config.auto_category_rules.length === 0) ? (
+          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <Icon name="Folder" size={32} className="mx-auto text-gray-400 mb-2" />
+            <p className="text-gray-500 text-sm">No auto-category rules configured.</p>
+            <p className="text-gray-400 text-xs mt-1">All imports will use the default category.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {config.auto_category_rules.map((rule, index) => (
+              <div key={index} className="p-4 bg-gray-50 rounded-lg space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+                    <select
+                      value={rule.category_id}
+                      onChange={(e) => updateCategoryRule(index, 'category_id', e.target.value)}
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-accent"
+                    >
+                      <option value="">Select category...</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCategoryRule(index)}
+                    className="mt-5"
+                  >
+                    <Icon name="Trash2" size={16} className="text-red-500" />
+                  </Button>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Keywords (comma-separated) — if any match, this category is assigned
+                  </label>
+                  <Input
+                    value={(rule.keywords || []).join(', ')}
+                    onChange={(e) => {
+                      const keywords = e.target.value.split(',').map(k => k.trim()).filter(Boolean);
+                      updateCategoryRule(index, 'keywords', keywords);
+                    }}
+                    placeholder="e.g. content systems, CMS, digital content"
+                    className="text-sm"
+                  />
+                </div>
               </div>
             ))}
           </div>
